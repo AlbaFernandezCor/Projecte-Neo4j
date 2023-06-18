@@ -1,0 +1,31 @@
+3b) 1
+match (h1:Habitatge),(h2:Habitatge)
+where h1.numero = h2.numero and h1.carrer = h2.carrer and h1.municipi = h2.municipi and h2.any_padro < h1.any_padro
+create (h1)-[r:MATEIX_HAB]->(h2)
+return h1, r, h2
+
+3b) 2
+call gds.graph.project('graph3b',['Individu','Habitatge'],['VIU','FAMILIA','MATEIX_HAB'])
+
+3b) 3
+CALL gds.nodeSimilarity.write('graph3b', {
+writeRelationshipType: 'SIMILAR',
+writeProperty: 'score'
+}) YIELD nodesCompared, relationshipsWritten
+
+SIMILAR_Hab:
+CALL gds.nodeSimilarity.write('graph3b',{
+writeRelationshipType: 'SIMILAR_Hab',
+writeProperty: 'score',
+nodeLabels: ['Habitatge']
+})
+YIELD nodesCompared, relationshipsWritten
+
+SIMILAR_Ind
+CALL gds.nodeSimilarity.write('graph3b',{
+writeRelationshipType: 'SIMILAR_Ind',
+writeProperty: 'score',
+similarityCutoff: 0.9,
+nodeLabels: ['Individu']
+})
+YIELD nodesCompared, relationshipsWritten
