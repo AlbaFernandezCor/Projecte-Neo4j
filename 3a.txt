@@ -1,0 +1,44 @@
+// Fem un project que l'aprofitarem per a alguna altra consulta
+CALL gds.graph.project('graf_3a_viu', ['Individu', 'Habitatge'], ['VIU'])
+
+
+* Persones que han viscut soles durant els anys: modo graf
+
+CALL gds.wcc.stream('graf_3a_viu')
+YIELD componentId, nodeId
+WITH componentId, collect(nodeId) as nodes, size(collect(nodeId)) as mida
+match (i:Individu) - [r:VIU]->(h:Habitatge)
+where id(i) in nodes and mida = 2
+return i,r,h
+
+
+* A quina casa han viscut més persones al llarg del temps?
+
+CALL gds.wcc.stream('graf_3a_viu')
+YIELD componentId, nodeId
+WITH componentId, collect(nodeId) as nodes, size(collect(nodeId)) as mida
+ORDER BY mida DESC LIMIT 1
+match (n)
+where id(n) in nodes
+return n;
+
+
+* Per cada municipi i any el nombre de parelles del tipus: (Individu)—(Habitatge):
+
+MATCH (i:Individu)-[:VIU]->(h:Habitatge)
+RETURN h.municipi AS municipi, h.any_padro AS any_padro, COUNT(DISTINCT i) AS num_parelles
+ORDER BY any_padro
+
+
+* Quantes components connexes no estan connectades a cap node de tipus ‘Habitatge’:
+
+MATCH (n)
+WHERE NOT (n)-[]->(:Habitatge)
+RETURN count(n) AS num_nodes_sense_hab
+
+
+* Comprovar si algun habitatge no té cap habitant associat:
+
+MATCH (h:Habitatge)
+WHERE NOT (h)<-[:VIU]-(:Individu)
+RETURN count(h) AS num_habitatges_sense_habitants
