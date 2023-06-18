@@ -1,0 +1,22 @@
+Query 3: Dels padrons de Sant Feliu de Llobregat (SFLL) d’entre 1800 i 1845 (no inclosos), retorna la població, l'any del padró i la llista d'identificadors dels habitatges de cada padró. Ordena els resultats per l'any de padró.
+\begin{verbatim}
+match (h:Habitatge{municipi: 'SFLL'})
+where 1800 < h.any_padro < 1845
+return h.municipi as Població, h.any_padro as Any_Padró, collect(h.Id_llar) as Id_Hab
+order by Any_Padró
+\end{verbatim}
+
+Query 11: Mostreu les famílies de Castellví de Rosanes amb més de 3 fills. Mostreu el nom i cognoms del cap de família i el nombre de fills. Ordeneu-les pel nombre de fills fins a un límit de 20, de més a menys.
+\begin{verbatim}
+MATCH (h:Habitatge{municipi: 'CR'})<-[:VIU]-(i:Individu)<-[r:FAMILIA]-(i2:Individu)
+WHERE r.relacio STARTS WITH 'hij' 
+    OR r.relacio STARTS WITH 'fill' 
+    OR r.relacio_H STARTS WITH 'afill'
+    OR r.relacio_H STARTS WITH 'fill'
+with i.name as nom, i.surname as primer_cognom, i.second_surname as segon_cognom,
+collect(i2.name) as nom_fills
+where size(nom_fills) > 3
+return nom, primer_cognom, segon_cognom, size(nom_fills) as num_fills
+order by num_fills desc
+limit 20
+\end{verbatim}
