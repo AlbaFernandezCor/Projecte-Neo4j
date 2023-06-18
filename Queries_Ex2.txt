@@ -1,13 +1,26 @@
-Query 3: Dels padrons de Sant Feliu de Llobregat (SFLL) d’entre 1800 i 1845 (no inclosos), retorna la població, l'any del padró i la llista d'identificadors dels habitatges de cada padró. Ordena els resultats per l'any de padró.
-\begin{verbatim}
+//Query 3: Dels padrons de Sant Feliu de Llobregat (SFLL) d’entre 1800 i 1845 (no inclosos), retorna la població, l'any del padró i la llista d'identificadors dels habitatges de cada padró. Ordena els resultats per l'any de padró.
+
 match (h:Habitatge{municipi: 'SFLL'})
 where 1800 < h.any_padro < 1845
 return h.municipi as Població, h.any_padro as Any_Padró, collect(h.Id_llar) as Id_Hab
 order by Any_Padró
-\end{verbatim}
 
-Query 11: Mostreu les famílies de Castellví de Rosanes amb més de 3 fills. Mostreu el nom i cognoms del cap de família i el nombre de fills. Ordeneu-les pel nombre de fills fins a un límit de 20, de més a menys.
-\begin{verbatim}
+//Query 5: Retorna totes les aparicions de "miguel estape bofill". Fes servir la relació SAME_AS per poder retornar totes les instancies, independentment de si hi ha variacions 
+//lèxiques (ex. diferents formes d'escriure el seu nom/cognoms). Mostra la informació en forma de subgraf.
+
+MATCH (i:Individu)-[:SAME_AS]-(i2:Individu)
+WHERE (i.name='miguel' AND i.surname='estape' AND i.second_surname='bofill')
+RETURN i, i2
+
+//Query 6: De la consulta anterior, retorna la informació en forma de taula: el nom, la llista de cognoms i la llista de segon cognom (elimina duplicats).
+
+MATCH (i:Individu)-[:SAME_AS]-(i2:Individu)
+WHERE i.name = 'miguel' AND i.surname = 'estape' AND i.second_surname = 'bofill'
+RETURN i.name AS nom, COLLECT(DISTINCT i2.surname) AS cognoms, COLLECT(DISTINCT i2.second_surname) AS segonCognoms
+
+
+//Query 11: Mostreu les famílies de Castellví de Rosanes amb més de 3 fills. Mostreu el nom i cognoms del cap de família i el nombre de fills. Ordeneu-les pel nombre de fills fins a un límit de 20, de més a menys.
+
 MATCH (h:Habitatge{municipi: 'CR'})<-[:VIU]-(i:Individu)<-[r:FAMILIA]-(i2:Individu)
 WHERE r.relacio STARTS WITH 'hij' 
     OR r.relacio STARTS WITH 'fill' 
@@ -19,4 +32,3 @@ where size(nom_fills) > 3
 return nom, primer_cognom, segon_cognom, size(nom_fills) as num_fills
 order by num_fills desc
 limit 20
-\end{verbatim}
