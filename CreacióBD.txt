@@ -1,0 +1,44 @@
+CREATE CONSTRAINT UniqueIndividu FOR (i:Individu) REQUIRE i.Id IS UNIQUE
+
+LOAD CSV WITH HEADERS FROM ’file:///INDIVIDUAL.csv’ AS row
+WITH toInteger(row.Id) AS Id, toInteger(row.Year) AS Year, row.name AS name,
+row.surname AS surname1, row.second_surname AS surname2
+WHERE row.Id IS NOT NULL
+MERGE (i:Individu {Id: Id})
+SET i.Year = Year, i.name = name, i.surname = surname1, i.second_surname = surname2
+RETURN count(i);
+
+CREATE CONSTRAINT UniqueHabitatge3 FOR (h:Habitatge) REQUIRE (h.Id_llar, h.municipi, h.any_padro) IS NODE KEY
+
+LOAD CSV WITH HEADERS FROM ’file:///HABITATGES.csv’ AS row
+WITH toInteger(row.Id_Llar) AS Id_llar, toInteger(row.Any_Padro) AS any_padro,
+row.Municipi AS municipi, row.Carrer AS carrer, toInteger(row.Numero) AS numero
+WHERE row.Id_Llar IS NOT NULL AND row.Municipi <> ’null’ AND row.Any_Padro IS NOT NULL
+MERGE (h:Habitatge {Id_llar: Id_llar, municipi: municipi, any_padro: any_padro})
+SET h.carrer = carrer,
+h.numero = numero
+RETURN count(h);
+
+LOAD CSV WITH HEADERS FROM ’file:///FAMILIA.csv’ AS row
+WITH toInteger(row.ID_1) AS Id_cap, toInteger(row.ID_2) AS Id_individu,
+row.Relacio AS relacio, row.Relacio_Harmonitzada AS relacio_H
+WHERE row.Relacio<>"null" OR row.Relacio_Harmonitzada<>"null"
+MATCH (i1:Individu {Id: Id_cap})
+MATCH (i2:Individu {Id: Id_individu})
+MERGE (i2)-[rel:FAMILIA {relacio: relacio, relacio_H: relacio_H}]->(i1)
+RETURN count(rel);
+
+LOAD CSV WITH HEADERS FROM ’file:///SAME_AS.csv’ AS row
+WITH toInteger(row.Id_A) AS Id_A, toInteger(row.Id_B) AS Id_B
+MATCH (i1:Individu {Id: Id_A})
+MATCH (i2:Individu {Id:Id_B})
+MERGE (i1)-[rel:SAME_AS]->(i2)
+RETURN count(rel);
+
+LOAD CSV WITH HEADERS FROM ’file:///VIU.csv’ AS row
+WITH toInteger(row.IND) AS Id_individu, toInteger(row.HOUSE_ID) AS Id_casa,
+toInteger(row.Year) AS year, row.Location AS localitzacio
+MATCH (i:Individu {Id: Id_individu})
+MATCH (h:Habitatge {Id_llar: Id_casa, municipi: localitzacio, any_padro:year})
+MERGE (i)-[rel:VIU {year: year, localitzacio: localitzacio}]->(h)
+RETURN count(rel);
