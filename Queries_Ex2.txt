@@ -18,6 +18,19 @@ MATCH (i:Individu)-[:SAME_AS]-(i2:Individu)
 WHERE i.name = 'miguel' AND i.surname = 'estape' AND i.second_surname = 'bofill'
 RETURN i.name AS nom, COLLECT(DISTINCT i2.surname) AS cognoms, COLLECT(DISTINCT i2.second_surname) AS segonCognoms
 
+//Query 8: De la consulta anterior, mostra ara només els fills o filles de "benito julivert". Ordena els resultats alfabèticament per nom.
+
+MATCH (p1:Individu)-[r:FAMILIA]->(p2:Individu)
+WHERE (p2.name = "benito" AND p2.surname = "julivert") AND (r.relacio = 'hijo' OR r.relacio = 'hija')
+RETURN p1.name, p1.surname, p1.second_surname
+ORDER BY p1.name ASC
+
+//Query 9: Llisteu totes les relacions familiars que hi ha.
+
+MATCH ()-[r:FAMILIA]->()
+WHERE r.relacio <> "null" AND r.relacio_H <> "null"
+RETURN DISTINCT r.relacio, r.relacio_H
+
 
 //Query 11: Mostreu les famílies de Castellví de Rosanes amb més de 3 fills. Mostreu el nom i cognoms del cap de família i el nombre de fills. Ordeneu-les pel nombre de fills fins a un límit de 20, de més a menys.
 
